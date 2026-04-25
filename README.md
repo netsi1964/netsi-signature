@@ -55,6 +55,10 @@ signature.addEventListener('signature:end', (event) => {
 });
 ```
 
+## Documentation for LLMs
+
+For AI-assisted development and code generation, see `llm.txt` which contains comprehensive documentation designed for LLM consumption. This includes all APIs, attributes, methods, events, CSS customization, i18n, form integration, and common use cases.
+
 ## Simple test of using `netsi-signature` from NPM (CodePen)
 
 See a simple test that imports `netsi-signature` from npm:

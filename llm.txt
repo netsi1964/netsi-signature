@@ -1,0 +1,463 @@
+# netsi-signature Component Documentation for LLMs
+
+## Overview
+netsi-signature is a modern vanilla JavaScript web component (custom element) that provides an interactive signature drawing canvas. It is form-associated, supports image export in multiple formats, includes undo/redo functionality, and is fully internationalized.
+
+## Installation
+
+### From NPM
+```bash
+npm install netsi-signature
+```
+
+Then import in your JavaScript:
+```js
+import 'netsi-signature';
+```
+
+### From JSR (Deno)
+```bash
+deno add jsr:@netsi1964/netsi-signature
+```
+
+Or in import statements:
+```js
+import 'jsr:@netsi1964/netsi-signature';
+import '@netsi1964/netsi-signature';
+```
+
+### From browser CDN (ESM)
+NPM-backed:
+```js
+import 'https://esm.sh/netsi-signature@0.1.0';
+```
+
+JSR-backed:
+```js
+import 'https://esm.sh/jsr/@netsi1964/netsi-signature@0.1.0';
+```
+
+## HTML Element
+
+The component is registered as the custom element `<netsi-signature>`.
+
+## Attributes
+
+All attributes are observed and reactive. Changing an attribute updates the component.
+
+### Standard Attributes
+- `name` (string): Form field name for form submission integration
+- `value` (string): The signature as a data URL. When set, loads the image onto the canvas
+- `disabled` (boolean): Disables drawing and controls
+- `required` (boolean): Makes the signature required for form validation
+
+### Styling Attributes
+- `stroke-color` (string): Hex color of the pen stroke (default: #111)
+- `stroke-width` (number): Base width in pixels (default: 2.5)
+- `background-color` (string): Canvas background color as CSS color (default: rgba(255,255,0,.05))
+- `format` (string): Output image format - 'png', 'jpeg', 'jpg', 'webp', or full MIME type (default: 'image/png')
+- `quality` (number): JPEG/WebP quality 0-1 (default: 0.92)
+
+### UI Attributes
+- `show-base64` (boolean): When present, displays a base64-encoded version in a textarea
+- `lang` (string): Language code for UI text (en, da, es, zh supported)
+
+## Properties (JavaScript)
+
+### Read-only
+- `signed` (boolean): True if user has drawn anything on the canvas
+- `signature` (HTMLImageElement): The internal img element showing signature preview
+- `imagebase64` (string): The base64-encoded signature (when show-base64 attribute is set)
+- `timeline` (Array): Flat array of all drawing points with time, coordinate, and pressure
+- `strokes` (Array): Array of stroke objects, each containing arrays of points
+- `mimeType` (string): Resolved MIME type based on format attribute
+- `fileExtension` (string): File extension derived from MIME type (png, jpg, webp)
+- `quality` (number): Clamped quality value (0-1)
+
+### Read-write
+- `value` (string): Data URL of signature. Setting loads image onto canvas
+- `disabled` (boolean): Disables drawing and all controls
+- `required` (boolean): Makes signature required for form submission
+
+### Form-related (read-only)
+- `checkValidity()`: Returns true if form is valid (required && signed || not required)
+- `reportValidity()`: Reports validity and returns true if valid
+
+## Methods
+
+All drawing methods are synchronous unless noted as async.
+
+### Drawing Control
+- `clear()`: Clears the canvas, resets undo/redo stack, emits 'signature:clear' event
+- `undo()`: Undoes last stroke if available, redraws canvas
+- `redo()`: Redoes last undone stroke if available, redraws canvas
+
+### Data Export
+- `toDataURL(type = this.mimeType, quality = this.quality)`: Returns data URL string of signature
+- `async toBlob(type = this.mimeType, quality = this.quality)`: Returns Blob of signature
+- `toBase64(type = this.mimeType, quality = this.quality)`: Returns base64-encoded string (without data: prefix)
+- `toImageData()`: Returns ImageData object from canvas
+- `async getSignatureData()`: Returns comprehensive signature object with all formats and metadata
+
+### Form Integration
+- `formResetCallback()`: Called when form resets; clears the signature
+- `formDisabledCallback(disabled)`: Called when form disables/enables; updates disabled state
+- `formStateRestoreCallback(value)`: Called on form state restoration; loads value onto canvas
+
+## Events
+
+All events bubble and are composed (cross shadow DOM boundary).
+
+### Event Types
+1. `signature:start` - Fired when user begins drawing
+2. `signature:draw` - Fired during drawing (throttled with requestAnimationFrame)
+3. `signature:end` - Fired when user finishes a stroke (lifts pen)
+4. `signature:clear` - Fired when canvas is cleared
+
+### Event Detail Object
+
+All events provide a `detail` object with the following properties:
+
+```
+{
+  blob: Blob | null,                    // Blob of signature image
+  file: File | null,                    // File object with signature.{ext}
+  imageData: ImageData | null,          // Canvas ImageData
+  dataUrl: string,                      // Data URL of signature
+  base64: string,                       // Base64 string (no prefix)
+  timeline: Array<{                     // Flat array of all drawing points
+    time: number,                       // High-resolution timestamp
+    coordinate: { x: number, y: number },
+    tryk: number | null,                // Pointer pressure (0-1) if supported
+    pointerType: string                 // 'pen', 'touch', 'mouse', 'unknown'
+  }>,
+  strokes: Array<Array<TimelinePoint>>, // Grouped by stroke
+  mimeType: string,                     // e.g., 'image/png'
+  timestamp: string,                    // ISO string when event fired
+  isEmpty: boolean,                     // True if canvas blank
+  width: number,                        // Canvas pixel width
+  height: number                        // Canvas pixel height
+}
+```
+
+### Listening to Events
+
+```js
+const signature = document.querySelector('netsi-signature');
+
+signature.addEventListener('signature:start', (e) => {
+  console.log('User started drawing');
+});
+
+signature.addEventListener('signature:draw', (e) => {
+  console.log('Drawing points so far:', e.detail.timeline.length);
+});
+
+signature.addEventListener('signature:end', (e) => {
+  console.log('Signature complete:', e.detail.dataUrl);
+});
+
+signature.addEventListener('signature:clear', (e) => {
+  console.log('Signature cleared');
+});
+```
+
+## CSS Customization
+
+The component uses CSS custom properties for theming. Override via :host selector or parent context.
+
+### Available CSS Variables
+
+```css
+--netsi-signature-bg: Canvas              /* Canvas background color (system color) */
+--netsi-signature-fg: CanvasText          /* Text/control foreground color */
+--netsi-signature-border: ...             /* Border colors */
+--netsi-signature-surface: ...            /* Internal surface colors */
+--netsi-signature-paper: rgba(255,255,0,.05)  /* Canvas background pattern */
+--netsi-signature-accent: #0069c2         /* Accent color for hover/focus */
+--netsi-signature-stroke: #111            /* Pen stroke color */
+--netsi-signature-radius: 1rem            /* Border radius */
+--netsi-signature-stroke-width: 2.5       /* Base pen width in pixels */
+--netsi-signature-min-height: 12rem       /* Minimum canvas height */
+```
+
+### Example Custom Theme
+
+```css
+netsi-signature {
+  --netsi-signature-bg: #fff;
+  --netsi-signature-fg: #222;
+  --netsi-signature-accent: #ff6b35;
+  --netsi-signature-stroke: #1f1f1f;
+  --netsi-signature-stroke-width: 3;
+  --netsi-signature-min-height: 16rem;
+}
+```
+
+## CSS Shadow Parts
+
+For more granular styling, target shadow DOM parts:
+
+- `part="root"` - Main container
+- `part="surface"` - Canvas wrapper
+- `part="canvas"` - The actual canvas element
+- `part="hint"` - "Sign here" empty hint text
+- `part="controls"` - Button container
+- `part="button"` - Individual buttons (undo, redo, clear)
+- `part="status"` - Status message area
+- `part="output"` - Output container
+- `part="signature"` - Signature image element
+- `part="imagebase64"` - Base64 textarea element
+
+### Example Using Parts
+
+```css
+netsi-signature::part(canvas) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+netsi-signature::part(button) {
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+}
+
+netsi-signature::part(status) {
+  color: #007f8c;
+}
+```
+
+## Internationalization (i18n)
+
+The component includes built-in translations for English (en), Danish (da), Spanish (es), and Chinese (zh).
+
+### UI Text Keys
+- `signHere` - Empty canvas hint text
+- `ready` - Initial status message
+- `signing` - Status while drawing
+- `signed` - Status after signature complete
+- `cleared` - Status after clear
+- `undo` - Undo button label
+- `redo` - Redo button label
+- `clear` - Clear button label
+
+### Setting Language
+
+Via attribute:
+```html
+<netsi-signature lang="da"></netsi-signature>
+<netsi-signature lang="es"></netsi-signature>
+<netsi-signature lang="zh"></netsi-signature>
+```
+
+Via document language:
+```html
+<html lang="da">
+  <netsi-signature></netsi-signature>
+</html>
+```
+
+Fallback: English (en) is used if language not supported.
+
+### Language Strings
+- en: { signHere: 'Sign here', ready: 'Ready', signing: 'Signing…', signed: 'Signature captured', cleared: 'Cleared', undo: 'Undo', redo: 'Redo', clear: 'Clear' }
+- da: { signHere: 'Underskriv her', ready: 'Klar', signing: 'Underskriver…', signed: 'Underskrift gemt', cleared: 'Ryddet', undo: 'Fortryd', redo: 'Gentag', clear: 'Ryd' }
+- es: { signHere: 'Firma aquí', ready: 'Listo', signing: 'Firmando…', signed: 'Firma capturada', cleared: 'Borrado', undo: 'Deshacer', redo: 'Rehacer', clear: 'Borrar' }
+- zh: { signHere: '请在此签名', ready: '准备就绪', signing: '正在签名…', signed: '签名已捕获', cleared: '已清除', undo: '撤销', redo: '重做', clear: '清除' }
+
+## Keyboard Shortcuts
+
+The canvas element supports keyboard controls when focused:
+
+- `Ctrl+Z` or `Cmd+Z` - Undo
+- `Ctrl+Y` or `Cmd+Y` - Redo
+- `Shift+Ctrl+Z` or `Shift+Cmd+Z` - Redo (alternate)
+- `Escape` - Clear signature
+
+## Form Integration
+
+### FormAssociated Custom Element
+The component implements the FormAssociated API:
+
+```js
+static formAssociated = true;
+```
+
+This means:
+- Works inside `<form>` elements
+- Participates in form submission
+- Respects form.reset()
+- Respects form.disabled state
+- Validates with form.checkValidity()
+
+### Form Submission Example
+
+```html
+<form id="signForm" method="POST" action="/submit">
+  <label>Name: <input name="fullName" required></label>
+  
+  <netsi-signature name="signature" required></netsi-signature>
+  
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+  const form = document.getElementById('signForm');
+  
+  form.addEventListener('submit', async (e) => {
+    if (!form.checkValidity()) {
+      e.preventDefault();
+      alert('Please sign the document');
+      return;
+    }
+    
+    const formData = new FormData(form);
+    const signature = formData.get('signature'); // Data URL string
+    
+    // Send to server...
+    fetch('/submit', {
+      method: 'POST',
+      body: formData
+    });
+  });
+</script>
+```
+
+### Getting Signature Data in Code
+
+```js
+const signature = document.querySelector('netsi-signature');
+
+// Simple data URL
+const dataUrl = signature.value;
+
+// All export formats
+const data = await signature.getSignatureData();
+console.log(data.blob);           // Blob
+console.log(data.file);           // File object
+console.log(data.base64);         // Base64 string
+console.log(data.imageData);      // ImageData
+console.log(data.timeline);       // Points with pressure
+console.log(data.strokes);        // Grouped strokes
+```
+
+## Pressure Sensitivity
+
+The component captures pointer pressure when available (stylus/pen input):
+
+```js
+signature.addEventListener('signature:draw', (e) => {
+  e.detail.timeline.forEach(point => {
+    if (point.tryk !== null) {
+      console.log(`Pressure: ${(point.tryk * 100).toFixed(0)}%`);
+    }
+  });
+});
+```
+
+Pressure is clamped between 0 (light) and 1 (hard).
+
+## Canvas Resizing
+
+The component automatically detects container size changes via ResizeObserver and adjusts the canvas while preserving the signature at the correct resolution.
+
+## Container Queries
+
+The component uses CSS Container Queries for responsive layout. Buttons stack vertically on narrow screens (<34rem).
+
+## Browser Support
+
+- Modern browsers with support for:
+  - Web Components (Custom Elements, Shadow DOM)
+  - Canvas API
+  - Pointer Events
+  - ResizeObserver
+  - Form-associated custom elements
+  
+Fallback for form support without FormAssociated API (hidden input injection).
+
+## Performance Notes
+
+- Drawing events throttled with requestAnimationFrame
+- Canvas retains image data during resize
+- Pressure data captured at full resolution
+- Undo/redo implemented with efficient stroke cloning
+
+## Accessibility
+
+- Canvas has aria-label="Signature drawing area"
+- Status messages use aria-live="polite"
+- Supports keyboard navigation and shortcuts
+- Button states managed for disabled states
+- Form validation integration with native APIs
+
+## Common Use Cases
+
+### 1. Simple Form Integration
+```html
+<form>
+  <netsi-signature name="sig" required show-base64></netsi-signature>
+  <button>Submit</button>
+</form>
+```
+
+### 2. Custom Export Handler
+```js
+const sig = document.querySelector('netsi-signature');
+sig.addEventListener('signature:end', async (e) => {
+  const jpg = await sig.toBlob('image/jpeg', 0.8);
+  // Upload jpg...
+});
+```
+
+### 3. Multi-language Document
+```html
+<netsi-signature id="sig"></netsi-signature>
+<script>
+  const sig = document.querySelector('#sig');
+  sig.lang = navigator.language.slice(0, 2);
+</script>
+```
+
+### 4. Load Previous Signature
+```js
+const sig = document.querySelector('netsi-signature');
+const previousSignature = localStorage.getItem('user_signature');
+if (previousSignature) {
+  sig.value = previousSignature;
+}
+```
+
+### 5. Styled Signature
+```html
+<netsi-signature 
+  style="
+    --netsi-signature-stroke: #d32f2f;
+    --netsi-signature-stroke-width: 3;
+    --netsi-signature-accent: #ffd54f;
+  ">
+</netsi-signature>
+```
+
+## Known Limitations
+
+- JavaScript component (no server-side rendering)
+- Canvas is single-layer (no layers/transparency)
+- Undo/redo stored in memory (not persisted automatically)
+- Mobile browsers may have platform-specific stylus support
+
+## CDN Test Links
+
+- NPM CodePen: https://codepen.io/netsi1964/pen/NPRQbPz?editors=1010
+- JSR CodePen: https://codepen.io/netsi1964/pen/OPRKbXQ
+
+## Package Links
+
+- npm: https://www.npmjs.com/package/netsi-signature
+- JSR: https://jsr.io/@netsi1964/netsi-signature
+- GitHub: https://github.com/Netsi1964/netsi-signature
+
+---
+
+Last updated: 2026-04-25
+Version: 0.1.0
+License: MIT
