@@ -55,6 +55,14 @@ signature.addEventListener('signature:end', (event) => {
 });
 ```
 
+## Simple test of using `netsi-signature` from NPM (CodePen)
+
+See a simple test that imports `netsi-signature` from npm:
+
+```txt
+https://codepen.io/netsi1964/pen/NPRQbPz?editors=1010
+```
+
 ## Event detail
 
 Events include:

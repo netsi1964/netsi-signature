@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>netsi-signature simple test (v1)</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;500;700&display=swap');
+
+      :root {
+        --bg: #f5f1e8;
+        --paper: #fffaf0;
+        --ink: #141414;
+        --accent: #c4471a;
+        --muted: #5d5348;
+        --border: #1f1f1f;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'IBM Plex Mono', monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 0% 0%, #ffffff 0%, transparent 45%),
+          radial-gradient(circle at 100% 100%, #efe2cb 0%, transparent 48%),
+          var(--bg);
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+      }
+
+      .card {
+        width: min(900px, 100%);
+        background: var(--paper);
+        border: 2px solid var(--border);
+        border-radius: 14px;
+        box-shadow: 10px 10px 0 #0000001a;
+        padding: 1rem;
+      }
+
+      h1 {
+        margin: 0 0 0.75rem;
+        font-size: clamp(1.2rem, 2.6vw, 2rem);
+        line-height: 1.1;
+      }
+
+      p {
+        margin: 0 0 1rem;
+        color: var(--muted);
+      }
+
+      form {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      input,
+      button,
+      textarea {
+        font: inherit;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.55rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #fff;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      button {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fff;
+        padding: 0.5rem 0.8rem;
+        cursor: pointer;
+      }
+
+      button.primary {
+        background: var(--ink);
+        color: #fff;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      .output {
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 8rem;
+        padding: 0.6rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #fff;
+      }
+
+      .meta {
+        display: grid;
+        gap: 0.35rem;
+        font-size: 0.9rem;
+      }
+
+      code {
+        background: #00000010;
+        padding: 0.1rem 0.35rem;
+        border-radius: 6px;
+      }
+
+      netsi-signature {
+        --netsi-signature-accent: var(--accent);
+        --netsi-signature-stroke: #111;
+        --netsi-signature-min-height: 12rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>netsi-signature simple test (v1)</h1>
+      <p>
+        Basic CodePen test for install, draw, clear, undo/redo, and event output.
+      </p>
+
+      <form id="demoForm">
+        <label for="fullName">Full name</label>
+        <input id="fullName" name="fullName" autocomplete="name" required />
+
+        <netsi-signature id="sig" name="signature" required show-base64></netsi-signature>
+
+        <div class="button-row">
+          <button type="button" id="undoBtn">Undo</button>
+          <button type="button" id="redoBtn">Redo</button>
+          <button type="button" id="clearBtn">Clear</button>
+          <button type="submit" class="primary">Submit form</button>
+        </div>
+      </form>
+
+      <section class="output" aria-live="polite">
+        <div class="meta">Last event: <code id="lastEvent">none</code></div>
+        <textarea id="eventPreview" readonly></textarea>
+      </section>
+    </main>
+
+    <script type="module">
+      import 'https://esm.sh/netsi-signature@0.1.0';
+
+      const signature = document.getElementById('sig');
+      const eventPreview = document.getElementById('eventPreview');
+      const lastEvent = document.getElementById('lastEvent');
+      const form = document.getElementById('demoForm');
+
+      function writeEvent(eventName, detail) {
+        lastEvent.textContent = eventName;
+        eventPreview.value = JSON.stringify(
+          {
+            event: eventName,
+            isEmpty: detail.isEmpty,
+            mimeType: detail.mimeType,
+            width: detail.width,
+            height: detail.height,
+            timelinePoints: detail.timeline.length,
+            dataUrlPreview: detail.dataUrl.slice(0, 72) + '...'
+          },
+          null,
+          2
+        );
+      }
+
+      ['signature:start', 'signature:draw', 'signature:end', 'signature:clear'].forEach(type => {
+        signature.addEventListener(type, event => {
+          writeEvent(type, event.detail);
+        });
+      });
+
+      document.getElementById('undoBtn').addEventListener('click', () => signature.undo());
+      document.getElementById('redoBtn').addEventListener('click', () => signature.redo());
+      document.getElementById('clearBtn').addEventListener('click', () => signature.clear());
+
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const signatureData = formData.get('signature');
+        alert(signatureData ? 'Form valid: signature captured.' : 'Form invalid: please sign first.');
+      });
+    </script>
+  </body>
+</html>

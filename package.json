@@ -47,5 +47,8 @@
     "lint": "deno lint",
     "jsr:publish": "deno publish",
     "npm:publish": "npm publish --provenance --access public"
+  },
+  "dependencies": {
+    "netsi-signature": "^0.1.0"
   }
 }
