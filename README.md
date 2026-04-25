@@ -63,6 +63,32 @@ See a simple test that imports `netsi-signature` from npm:
 https://codepen.io/netsi1964/pen/NPRQbPz?editors=1010
 ```
 
+## Simple test of using `@netsi1964/netsi-signature` from JSR
+
+See a simple test that imports `@netsi1964/netsi-signature` from JSR:
+
+```txt
+https://codepen.io/netsi1964/pen/OPRKbXQ
+```
+
+JSR package page:
+
+```txt
+https://jsr.io/@netsi1964/netsi-signature
+```
+
+For browser-based playgrounds (for example CodePen), use a JSR-backed ESM URL:
+
+```js
+import 'https://esm.sh/jsr/@netsi1964/netsi-signature@0.1.0';
+```
+
+Local test file in this repository:
+
+```txt
+test/simple-test-jsr.html
+```
+
 ## Event detail
 
 Events include:
