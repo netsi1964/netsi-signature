@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Netsi Signature Deno demo</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/netsi-signature.js"></script>
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">Netsi Signature</p>
+      <h1>Form submit demo for Deno Deploy</h1>
+      <p>This page submits a real form to <code>/submit</code>. The next route renders the submitted metadata and signature image.</p>
+      <p class="coffee"><a href="https://www.buymeacoffee.com/Netsi1964" rel="me noopener noreferrer">Buy me a coffee</a></p>
+    </header>
+
+    <form id="signature-form" class="card" action="/submit" method="post">
+      <label>
+        Full name
+        <input name="fullName" autocomplete="name" required placeholder="Ada Lovelace">
+      </label>
+
+      <netsi-signature
+        id="signature"
+        name="signature"
+        required
+        show-base64
+        stroke-color="#111111"
+        stroke-width="2.5"
+        format="image/png">
+      </netsi-signature>
+
+      <input id="signature-meta" name="signature_meta" type="hidden">
+
+      <div class="actions">
+        <button type="submit">Submit form</button>
+        <button type="reset">Reset</button>
+      </div>
+    </form>
+
+    <section class="card">
+      <h2>Fetch example for CodePen</h2>
+      <p>Use <code>/api/signatures</code> from CodePen or another origin. This demo endpoint returns JSON when the request accepts JSON.</p>
+      <pre><code id="fetch-example"></code></pre>
+    </section>
+  </main>
+</body>
+</html>

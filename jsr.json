@@ -1,0 +1,12 @@
+{
+  "name": "@netsi1964/netsi-signature",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/netsi-signature.js",
+    "./netsi-signature.js": "./src/netsi-signature.js"
+  },
+  "publish": {
+    "include": ["src", "dist", "README.md", "LICENSE", "jsr.json"]
+  }
+}

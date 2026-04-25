@@ -1,0 +1,51 @@
+{
+  "name": "netsi-signature",
+  "version": "0.1.0",
+  "description": "A modern vanilla JavaScript signature custom element with image export, form participation, i18n, and container-query based UI.",
+  "type": "module",
+  "sideEffects": true,
+  "license": "MIT",
+  "author": "Netsi1964",
+  "homepage": "https://github.com/Netsi1964/netsi-signature#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Netsi1964/netsi-signature.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Netsi1964/netsi-signature/issues"
+  },
+  "keywords": [
+    "signature",
+    "custom-element",
+    "web-components",
+    "canvas",
+    "form-associated",
+    "vanilla-js",
+    "deno",
+    "jsr"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/netsi-signature.js",
+      "default": "./src/netsi-signature.js"
+    },
+    "./netsi-signature.js": "./src/netsi-signature.js"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "deno task demo",
+    "demo": "deno run --allow-net --allow-read examples/deno-app/main.ts",
+    "check": "deno check src/netsi-signature.js examples/deno-app/main.ts",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "jsr:publish": "deno publish",
+    "npm:publish": "npm publish --provenance --access public"
+  }
+}

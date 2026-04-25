@@ -1,0 +1,33 @@
+{
+  "name": "@netsi1964/netsi-signature",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/netsi-signature.js",
+    "./netsi-signature.js": "./src/netsi-signature.js"
+  },
+  "publish": {
+    "include": [
+      "src",
+      "dist",
+      "README.md",
+      "LICENSE",
+      "deno.json"
+    ],
+    "exclude": [
+      "examples"
+    ]
+  },
+  "tasks": {
+    "demo": "deno run --allow-net --allow-read examples/deno-app/main.ts",
+    "check": "deno check src/netsi-signature.js examples/deno-app/main.ts",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "publish:jsr": "deno publish",
+    "deploy": "deno deploy --entrypoint examples/deno-app/main.ts"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom", "dom.iterable", "esnext"],
+    "checkJs": false
+  }
+}
